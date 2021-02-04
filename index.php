@@ -1,8 +1,37 @@
 <?php
 
-if($_post['name'] === '') {
-    $error['name'] = 'blank';
+session_start();
+
+$error = [];
+
+if($_SERVER['REQUEST_METHOD'] === 'POST'){
+    $post = filter_input_array(INPUT_POST, $_POST);
+    //フォームの送信時にエラーをチェックする
+    if($post['name'] === '') {
+        $error['name'] = 'blank';
+    }
+    if($post['email'] === '') {
+        $error['email'] = 'blank';
+    } else if(!filter_var($post['email'], FILTER_VALIDATE_EMAIL)){
+        $error['email'] = 'email';
+    }
+    
+    if($post['contact'] === '') {
+        $error['contact'] = 'blank';
+    }
+
+    if(count($error) === 0) {
+        //エラーがないので確認画面に移動
+        $_SESSION['form'] = $post;
+        header('Location: confirm.php');
+        exit();
+    }
+} else {
+    if(isset($_SESSION['form'])) {
+        $post = $_SESSION['form'];
+    }
 }
+
 
 ?>
 
@@ -29,7 +58,12 @@ if($_post['name'] === '') {
                         <p class="require_item">必須</p>
                     </div>
                     <div class="col-8">
-                        <input type="text" name="name" id="inputName" class="form-control" required autofocus>
+                        <input 
+                        type="text" 
+                        name="name" 
+                        id="inputName" 
+                        class="form-control" 
+                        value="<?php echo htmlspecialchars($post['name']);?>" required autofocus>
                         <?php if($error['name'] === 'blank'):?>
                             <p class="error_msg">※お名前をご記入下さい</p>
                         <?php endif; ?>  
@@ -45,8 +79,13 @@ if($_post['name'] === '') {
                         <p class="require_item">必須</p>
                     </div>
                     <div class="col-8">
-                        <input type="email" name="email" id="inputEmail" class="form-control" required>
-                        <p class="error_msg"></p>
+                        <input type="email" name="email" id="inputEmail" class="form-control" value="<?php echo htmlspecialchars($post['email']);?>" required>
+                        <?php if($error['email'] === 'blank'):?>
+                            <p class="error_msg">※メールアドレスをご記入下さい</p>
+                        <?php endif; ?>  
+                        <?php if($error['email'] === 'email'):?>
+                            <p class="error_msg">※メールアドレス正しくご記入下さい</p>
+                        <?php endif; ?>  
                     </div>
                 </div>
             </div>
@@ -59,8 +98,11 @@ if($_post['name'] === '') {
                         <p class="require_item">必須</p>
                     </div>
                     <div class="col-8">
-                        <textarea name="contact" id="inputContent" rows="10" class="form-control" required></textarea>
-                        <p class="error_msg"></p>
+                        <textarea name="contact" id="inputContent" rows="10" class="form-control"  required><?php echo htmlspecialchars($post['contact']);?></textarea>
+                        <?php if($error['contact'] === 'blank'):?>
+                            <p class="error_msg">※お問い合わせ内容をご記入下さい</p>
+                        <?php endif; ?>  
+                        
                     </div>
                 </div>
             </div>

@@ -1,3 +1,37 @@
+<?php
+
+session_start();
+
+//入力画面からのアクせすじゃなければもどす
+if(!isset($_SESSION['form'])) {
+    header('Location: index.php');
+    exit();
+} else {
+    $post = $_SESSION['form'];
+}
+
+if($_SERVER['REQUEST_METHOD'] === 'POST') {
+    //メールを送信する
+    $to = 'ex@example';
+    $from = 'お問い合わせが届きました';
+    $body = <<<EOT
+    名前：{$post['name']}
+    メールアドレス：{$post['email']}
+    内容：{$post['contact']}
+    EOT;
+    mb_send_mail($to,$subject,$body, "From: {$from}");
+    unset($_SESSION['form']);
+    header('Location: thanks.html');
+    exit();
+}
+
+
+$post = $_SESSION['form'];
+
+
+?>
+
+
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -9,7 +43,7 @@
 <body>
     <!-- お問合せフォーム画面 -->
     <div class="container">
-        <form action="./thanks.html" method="POST">
+        <form action="./thanks.php" method="POST">
             <p>お問い合わせ</p>
             <div class="form-group">
                 <div class="row">
@@ -17,7 +51,9 @@
                         <label for="inputName">お名前</label>
                     </div>
                     <div class="col-9">
-                        <p class="display_item">みつばち　ビー太</p>
+                        <p class="display_item">
+                            <?php echo htmlspecialchars($post['name']); ?>
+                        </p>
                     </div>
                 </div>
             </div>
@@ -27,7 +63,7 @@
                         <label for="inputEmail">メールアドレス</label>
                     </div>
                     <div class="col-9">
-                        <p class="display_item">bee@bee.com</p>
+                        <?php echo htmlspecialchars($post['email']); ?>
                     </div>
                 </div>
             </div>
@@ -37,13 +73,13 @@
                         <label for="inputContent">お問い合わせ内容</label>
                     </div>
                     <div class="col-9">
-                        <p class="display_item">お問い合わせフォームの作り方について、知りたいです。</p>
+                        <?php echo nl2br(htmlspecialchars($post['contact'])); ?>
                     </div>
                 </div>
             </div>
             <div class="row">
                 <div class="col-9 offset-3">
-                    <a href="./contact.html">戻る</a>
+                    <a href="index.php">戻る</a>
                     <button type="submit">送信する</button>
                 </div>
             </div>
